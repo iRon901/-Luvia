@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LUVIA 樂薇婭 · 後台管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --rose:#c9a0a0;--rose-light:#f9f0f0;--rose-dark:#8b5e5e;
+  --gold:#c4a46a;--ink:#2a1f1f;--muted:#7a6a6a;--surface:#fdf9f7;
+  --green:#7aaa8a;--green-light:#eef5f0;--green-dark:#3d6e4f;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:0 0 4rem}
+
+/* LOGIN */
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:14px;letter-spacing:0.4em;color:var(--gold);margin-bottom:1.5rem}
+.login-box{background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:16px;padding:2rem 1.75rem;width:100%;max-width:320px}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--ink);text-align:center;margin-bottom:1.5rem}
+.login-label{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.login-input{width:100%;padding:10px 13px;background:var(--rose-light);border:0.5px solid rgba(201,160,160,0.3);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;margin-bottom:1.25rem;-webkit-appearance:none}
+.login-input:focus{border-color:var(--rose)}
+.login-btn{width:100%;padding:0.9rem;background:var(--ink);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.2s}
+.login-btn:hover{background:var(--rose-dark)}
+.login-err{font-size:12px;color:var(--rose-dark);text-align:center;margin-top:0.75rem;display:none}
+
+/* MAIN */
+#adminScreen{display:none}
+.top-bar{background:#fff;border-bottom:0.5px solid rgba(201,160,160,0.3);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.top-logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:0.3em;color:var(--gold)}
+.top-logout{font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:'DM Sans',sans-serif}
+
+/* TABS */
+.tabs{display:flex;margin:1.25rem 1.5rem 0;border-bottom:0.5px solid rgba(201,160,160,0.3)}
+.tab{flex:1;padding:9px 4px;text-align:center;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s}
+.tab.active{color:var(--rose-dark);border-bottom-color:var(--rose)}
+
+.tab-content{display:none;padding:1.25rem 1.5rem}
+.tab-content.active{display:block}
+
+/* SECTION */
+.sec-title{font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem}
+.card{background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem}
+
+/* TIMES */
+.time-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:1rem}
+.chip{display:flex;align-items:center;gap:6px;background:var(--rose-light);border:0.5px solid rgba(201,160,160,0.4);border-radius:20px;padding:5px 12px;font-size:13px;color:var(--ink)}
+.chip-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:14px;line-height:1;padding:0 0 0 2px;font-family:'DM Sans',sans-serif}
+.chip-del:hover{color:var(--rose-dark)}
+.add-row{display:flex;gap:8px;align-items:center}
+.add-input{flex:1;padding:9px 12px;background:var(--rose-light);border:0.5px solid rgba(201,160,160,0.3);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none}
+.add-input:focus{border-color:var(--rose)}
+.btn-add{padding:9px 18px;background:var(--rose);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;white-space:nowrap}
+.btn-add:hover{background:var(--rose-dark)}
+.btn-save{width:100%;padding:0.85rem;background:var(--ink);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;margin-top:0.5rem;transition:background 0.2s}
+.btn-save:hover{background:var(--rose-dark)}
+.save-ok{font-size:12px;color:var(--green-dark);text-align:center;margin-top:0.5rem;display:none}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem}
+.cal-nav-btn{background:none;border:0.5px solid rgba(201,160,160,0.4);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:13px;color:var(--ink);font-family:'DM Sans',sans-serif}
+.cal-nav-btn:hover{background:var(--rose-light)}
+.cal-month{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ink)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day-name{text-align:center;font-size:9px;color:var(--muted);letter-spacing:0.06em;padding:4px 0;text-transform:uppercase}
+.cal-day{text-align:center;padding:8px 2px;border-radius:9px;cursor:pointer;font-size:14px;color:var(--ink);transition:all 0.2s;user-select:none}
+.cal-day:hover{background:var(--rose-light)}
+.cal-day.today{color:var(--rose-dark);font-weight:500}
+.cal-day.blocked{background:rgba(201,160,160,0.25);color:var(--rose-dark)}
+.cal-day.other-month{color:#ccc;cursor:default}
+.cal-day.other-month:hover{background:none}
+.cal-legend{display:flex;gap:1rem;margin-top:0.75rem;font-size:11px;color:var(--muted)}
+.cal-legend span{display:flex;align-items:center;gap:5px}
+.cal-legend-dot{width:10px;height:10px;border-radius:3px}
+
+/* BOOKINGS */
+.booking-card{background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.75rem}
+.bk-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem}
+.bk-name{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--ink)}
+.bk-date{font-size:11px;color:var(--muted)}
+.bk-badge{font-size:10px;padding:3px 9px;border-radius:20px;background:var(--rose-light);color:var(--rose-dark)}
+.bk-badge.male{background:var(--green-light);color:var(--green-dark)}
+.bk-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--muted)}
+.bk-row span:last-child{color:var(--ink);font-weight:500;text-align:right;max-width:60%}
+.bk-total{border-top:0.5px solid rgba(201,160,160,0.2);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:13px}
+.bk-total span:last-child{color:var(--rose-dark);font-weight:500}
+.bk-del{background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif;margin-top:6px}
+.bk-del:hover{color:var(--rose-dark)}
+.empty-msg{text-align:center;font-size:13px;color:var(--muted);padding:2rem 0}
+
+/* SEARCH */
+.search-input{width:100%;padding:9px 13px;background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;margin-bottom:1rem}
+.search-input:focus{border-color:var(--rose)}
+
+/* STATS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.stat-card{background:#fff;border:0.5px solid rgba(201,160,160,0.25);border-radius:12px;padding:0.9rem 1rem}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<!-- 登入畫面 -->
+<div id="loginScreen">
+  <div class="login-logo">✦ LUVIA 樂薇婭 ✦</div>
+  <div class="login-box">
+    <div class="login-title">塔莎後台管理</div>
+    <label class="login-label">密碼</label>
+    <input class="login-input" id="pwInput" type="password" placeholder="請輸入管理密碼" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">登入</button>
+    <div class="login-err" id="loginErr">密碼錯誤，請再試一次</div>
+  </div>
+</div>
+
+<!-- 後台主畫面 -->
+<div id="adminScreen">
+  <div class="top-bar">
+    <div class="top-logo">✦ LUVIA 樂薇婭 後台</div>
+    <button class="top-logout" onclick="doLogout()">登出</button>
+  </div>
+
+  <div class="wrap">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0)">時段管理</div>
+      <div class="tab" onclick="switchTab(1)">封鎖日期</div>
+      <div class="tab" onclick="switchTab(2)">預約記錄</div>
+    </div>
+
+    <!-- TAB 0: 時段管理 -->
+    <div class="tab-content active" id="tabTimes">
+      <div class="sec-title">目前開放時段</div>
+      <div class="card">
+        <div class="time-chips" id="timeChips"></div>
+        <div class="add-row">
+          <input class="add-input" id="newTime" type="time" placeholder="新增時段"/>
+          <button class="btn-add" onclick="addTime()">新增</button>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveTimes()">儲存時段設定</button>
+      <div class="save-ok" id="timeOk">✦ 已儲存，顧客頁面立即生效</div>
+    </div>
+
+    <!-- TAB 1: 封鎖日期 -->
+    <div class="tab-content" id="tabDates">
+      <div class="sec-title">點選日期來封鎖/開放（紅色 = 不可預約）</div>
+      <div class="card">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="prevMonth()">‹</button>
+          <div class="cal-month" id="calMonth"></div>
+          <button class="cal-nav-btn" onclick="nextMonth()">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <span><div class="cal-legend-dot" style="background:rgba(201,160,160,0.25)"></div>封鎖</span>
+          <span><div class="cal-legend-dot" style="background:var(--rose-light)"></div>今天</span>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveDates()">儲存封鎖設定</button>
+      <div class="save-ok" id="dateOk">✦ 已儲存，顧客頁面立即生效</div>
+    </div>
+
+    <!-- TAB 2: 預約記錄 -->
+    <div class="tab-content" id="tabBookings">
+      <div class="stats-grid" id="statsGrid"></div>
+      <input class="search-input" id="searchInput" placeholder="搜尋姓名或電話..." oninput="renderBookings()"/>
+      <div class="sec-title">預約記錄（最新在上）</div>
+      <div id="bookingsList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_PW = 'luvia2024';
+let currentTimes = [];
+let blockedDates = [];
+let calYear, calMonth;
+
+/* ── 登入 ── */
+function doLogin() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw === ADMIN_PW) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('adminScreen').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+function doLogout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('adminScreen').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginErr').style.display = 'none';
+}
+
+/* ── 載入資料 ── */
+function loadData() {
+  const cfg = JSON.parse(localStorage.getItem('luvia_admin_cfg') || '{}');
+  currentTimes = cfg.times && cfg.times.length ? [...cfg.times] : ['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+  blockedDates = cfg.blockedDates ? [...cfg.blockedDates] : [];
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+  renderTimeChips();
+  renderCal();
+  renderBookings();
+  renderStats();
+}
+
+/* ── TABS ── */
+function switchTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.className = 'tab' + (j===i?' active':''));
+  document.querySelectorAll('.tab-content').forEach((t,j) => t.className = 'tab-content' + (j===i?' active':''));
+}
+
+/* ══════ TAB 0: 時段 ══════ */
+function renderTimeChips() {
+  const sorted = [...currentTimes].sort();
+  document.getElementById('timeChips').innerHTML = sorted.map(t => `
+    <div class="chip">
+      ${t}
+      <button class="chip-del" onclick="removeTime('${t}')">✕</button>
+    </div>
+  `).join('') || '<span style="font-size:12px;color:var(--muted)">尚未設定時段</span>';
+}
+function addTime() {
+  const v = document.getElementById('newTime').value;
+  if (!v) { alert('請選擇時間'); return; }
+  const hhmm = v.slice(0,5);
+  if (currentTimes.includes(hhmm)) { alert('此時段已存在'); return; }
+  currentTimes.push(hhmm);
+  document.getElementById('newTime').value = '';
+  renderTimeChips();
+}
+function removeTime(t) {
+  currentTimes = currentTimes.filter(x => x !== t);
+  renderTimeChips();
+}
+function saveTimes() {
+  const cfg = JSON.parse(localStorage.getItem('luvia_admin_cfg') || '{}');
+  cfg.times = [...currentTimes].sort();
+  localStorage.setItem('luvia_admin_cfg', JSON.stringify(cfg));
+  const ok = document.getElementById('timeOk');
+  ok.style.display = 'block';
+  setTimeout(() => ok.style.display = 'none', 2500);
+}
+
+/* ══════ TAB 1: 封鎖日期 ══════ */
+function renderCal() {
+  const months = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('calMonth').textContent = `${calYear} · ${months[calMonth]}`;
+  const days = ['日','一','二','三','四','五','六'];
+  const today = new Date();
+  const firstDay = new Date(calYear, calMonth, 1).getDay();
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+
+  let html = days.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  // 上個月補位
+  for (let i = firstDay - 1; i >= 0; i--) {
+    html += `<div class="cal-day other-month">${daysInPrev - i}</div>`;
+  }
+  // 本月
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = `${calYear}-${calMonth+1}-${d}`;
+    const isToday = today.getFullYear()===calYear && today.getMonth()===calMonth && today.getDate()===d;
+    const isBlocked = blockedDates.includes(key);
+    html += `<div class="cal-day${isToday?' today':''}${isBlocked?' blocked':''}" onclick="toggleBlock('${key}')">${d}</div>`;
+  }
+  // 下個月補位
+  const total = firstDay + daysInMonth;
+  const remain = total % 7 === 0 ? 0 : 7 - (total % 7);
+  for (let d = 1; d <= remain; d++) {
+    html += `<div class="cal-day other-month">${d}</div>`;
+  }
+  document.getElementById('calGrid').innerHTML = html;
+}
+function toggleBlock(key) {
+  if (blockedDates.includes(key)) {
+    blockedDates = blockedDates.filter(d => d !== key);
+  } else {
+    blockedDates.push(key);
+  }
+  renderCal();
+}
+function prevMonth() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCal();
+}
+function nextMonth() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCal();
+}
+function saveDates() {
+  const cfg = JSON.parse(localStorage.getItem('luvia_admin_cfg') || '{}');
+  cfg.blockedDates = [...blockedDates];
+  localStorage.setItem('luvia_admin_cfg', JSON.stringify(cfg));
+  const ok = document.getElementById('dateOk');
+  ok.style.display = 'block';
+  setTimeout(() => ok.style.display = 'none', 2500);
+}
+
+/* ══════ TAB 2: 預約記錄 ══════ */
+function getBookings() {
+  return JSON.parse(localStorage.getItem('luvia_bookings') || '[]');
+}
+function renderStats() {
+  const bks = getBookings();
+  const today = new Date().toLocaleDateString('zh-TW');
+  const todayCount = bks.filter(b => b.createdAt && b.createdAt.startsWith(today.replace(/\//g,'-').slice(0,-3))).length;
+  document.getElementById('statsGrid').innerHTML = `
+    <div class="stat-card"><div class="stat-label">總預約筆數</div><div class="stat-value">${bks.length}</div></div>
+    <div class="stat-card"><div class="stat-label">本月新增</div><div class="stat-value">${bks.filter(b=>{const d=new Date(b.id);return d.getMonth()===new Date().getMonth()&&d.getFullYear()===new Date().getFullYear();}).length}</div></div>
+  `;
+}
+function renderBookings() {
+  const q = document.getElementById('searchInput').value.trim().toLowerCase();
+  let bks = getBookings();
+  if (q) bks = bks.filter(b => b.name.toLowerCase().includes(q) || b.phone.includes(q));
+  if (!bks.length) {
+    document.getElementById('bookingsList').innerHTML = `<div class="empty-msg">暫無預約記錄</div>`;
+    return;
+  }
+  document.getElementById('bookingsList').innerHTML = bks.map(b => `
+    <div class="booking-card">
+      <div class="bk-header">
+        <div>
+          <div class="bk-name">${b.name}</div>
+          <div class="bk-date">${b.createdAt || ''}</div>
+        </div>
+        <div class="bk-badge${b.gender==='男士'?' male':''}">${b.gender}</div>
+      </div>
+      <div class="bk-row"><span>電話</span><span>${b.phone}</span></div>
+      ${b.lineId ? `<div class="bk-row"><span>LINE</span><span>${b.lineId}</span></div>` : ''}
+      <div class="bk-row"><span>服務</span><span>${b.services}</span></div>
+      <div class="bk-row"><span>時間</span><span>${b.date}</span></div>
+      ${b.memo ? `<div class="bk-row"><span>備註</span><span>${b.memo}</span></div>` : ''}
+      <div class="bk-total"><span>合計</span><span>${b.total}</span></div>
+      <button class="bk-del" onclick="deleteBooking(${b.id})">刪除此記錄</button>
+    </div>
+  `).join('');
+}
+function deleteBooking(id) {
+  if (!confirm('確定要刪除這筆預約記錄嗎？')) return;
+  const bks = getBookings().filter(b => b.id !== id);
+  localStorage.setItem('luvia_bookings', JSON.stringify(bks));
+  renderBookings();
+  renderStats();
+}
+</script>
+</body>
+</html>
