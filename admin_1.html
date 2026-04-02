@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>LUVIA 樂薇婭 · 後台管理</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--rose:#c9a0a0;--rose-light:#f9f0f0;--rose-dark:#8b5e5e;--gold:#c4a46a;--ink:#2a1f1f;--muted:#7a6a6a;--surface:#fdf9f7;--green:#7aaa8a;--green-light:#eef5f0;--green-dark:#3d6e4f}
+body{font-family:'DM Sans',sans-serif;background:var(--surface);color:var(--ink);min-height:100vh}
+.wrap{max-width:520px;margin:0 auto;padding:0 0 5rem}
+#loginScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2rem}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:14px;letter-spacing:0.4em;color:var(--gold);margin-bottom:1.5rem}
+.login-box{background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:16px;padding:2rem 1.75rem;width:100%;max-width:320px}
+.login-title{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;color:var(--ink);text-align:center;margin-bottom:1.5rem}
+.login-label{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.login-input{width:100%;padding:10px 13px;background:var(--rose-light);border:0.5px solid rgba(201,160,160,0.3);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;margin-bottom:1.25rem;-webkit-appearance:none}
+.login-input:focus{border-color:var(--rose)}
+.login-btn{width:100%;padding:0.9rem;background:var(--ink);color:#fff;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;transition:background 0.2s}
+.login-btn:hover{background:var(--rose-dark)}
+.login-err{font-size:12px;color:var(--rose-dark);text-align:center;margin-top:0.75rem;display:none}
+#adminScreen{display:none}
+.top-bar{background:#fff;border-bottom:0.5px solid rgba(201,160,160,0.3);padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+.top-logo{font-family:'Cormorant Garamond',serif;font-size:13px;letter-spacing:0.3em;color:var(--gold)}
+.top-logout{font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;background:none;border:none;font-family:'DM Sans',sans-serif}
+.tabs{display:flex;margin:1.25rem 1.5rem 0;border-bottom:0.5px solid rgba(201,160,160,0.3);overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;padding:9px 12px;font-size:11px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap}
+.tab.active{color:var(--rose-dark);border-bottom-color:var(--rose)}
+.tab-content{display:none;padding:1.25rem 1.5rem}
+.tab-content.active{display:block}
+.sec-title{font-size:10px;letter-spacing:0.25em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem}
+.card{background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:14px;padding:1.1rem 1.25rem;margin-bottom:1rem}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--rose-light);border:0.5px solid rgba(201,160,160,0.4);border-radius:20px;padding:5px 12px;font-size:13px;color:var(--ink);margin:3px}
+.chip-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:13px;line-height:1;padding:0;font-family:'DM Sans',sans-serif}
+.chip-del:hover{color:var(--rose-dark)}
+.add-row{display:flex;gap:8px;align-items:center}
+.add-input{flex:1;padding:9px 12px;background:var(--rose-light);border:0.5px solid rgba(201,160,160,0.3);border-radius:9px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--ink);outline:none;-webkit-appearance:none}
+.add-input:focus{border-color:var(--rose)}
+.btn-add{padding:9px 16px;background:var(--rose);color:#fff;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.btn-add:hover{background:var(--rose-dark)}
+.btn-save{width:100%;padding:0.85rem;background:var(--ink);color:#fff;border:none;border-radius:11px;font-family:'DM Sans',sans-serif;font-size:13px;letter-spacing:0.1em;text-transform:uppercase;cursor:pointer;margin-top:0.5rem;transition:background 0.2s}
+.btn-save:hover{background:var(--rose-dark)}
+.save-ok{font-size:12px;color:var(--green-dark);text-align:center;margin-top:0.5rem;display:none}
+.cat-btn{padding:7px 14px;border:0.5px solid rgba(201,160,160,0.4);border-radius:20px;font-size:12px;color:var(--muted);cursor:pointer;background:#fff;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.cat-btn.active{background:var(--rose);color:#fff;border-color:var(--rose)}
+
+/* CALENDAR */
+.cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem}
+.cal-nav-btn{background:none;border:0.5px solid rgba(201,160,160,0.4);border-radius:8px;padding:5px 12px;cursor:pointer;font-size:13px;color:var(--ink);font-family:'DM Sans',sans-serif}
+.cal-nav-btn:hover{background:var(--rose-light)}
+.cal-month{font-family:'Cormorant Garamond',serif;font-size:1.1rem;color:var(--ink)}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-day-name{text-align:center;font-size:9px;color:var(--muted);padding:4px 0;text-transform:uppercase}
+.cal-day{text-align:center;padding:7px 2px;border-radius:9px;cursor:pointer;font-size:13px;color:var(--ink);transition:all 0.2s;user-select:none;position:relative;line-height:1.3}
+.cal-day:hover{background:var(--rose-light)}
+.cal-day.today{background:var(--rose-light);color:var(--rose-dark);font-weight:700;border:1.5px solid var(--rose)}
+.cal-day.blocked{background:#c9a0a0;color:#fff;font-weight:600}
+.cal-day.blocked:hover{background:#a07878}
+.cal-day.has-rule{background:var(--green-light);color:var(--green-dark);font-weight:600}
+.cal-day.has-rule:hover{background:#d4eadb}
+.cal-day.other-month{color:#ddd;cursor:default}
+.cal-day.other-month:hover{background:none}
+.cal-dot{width:4px;height:4px;border-radius:50%;background:var(--green-dark);margin:1px auto 0}
+.cal-legend{display:flex;gap:0.75rem;margin-top:0.75rem;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.cal-legend span{display:flex;align-items:center;gap:5px}
+.cal-legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+
+/* SCHEDULE PANEL */
+.sched-panel{background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:14px;padding:1.1rem 1.25rem;margin-top:1rem;display:none}
+.sched-date-title{font-family:'Cormorant Garamond',serif;font-size:1.05rem;color:var(--ink);margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center}
+.sched-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:18px;line-height:1}
+.time-slot-row{border:0.5px solid rgba(201,160,160,0.25);border-radius:10px;margin-bottom:8px;overflow:hidden}
+.time-slot-hdr{display:flex;align-items:center;justify-content:space-between;padding:0.65rem 0.9rem;cursor:pointer;background:#fff;transition:background 0.15s}
+.time-slot-hdr:hover{background:var(--rose-light)}
+.time-slot-label{font-size:13px;font-weight:500;color:var(--ink)}
+.slot-status{font-size:10px;padding:3px 9px;border-radius:20px}
+.s-open{background:var(--green-light);color:var(--green-dark)}
+.s-blocked{background:#f5e0e0;color:var(--rose-dark)}
+.s-limited{background:#fdf0d5;color:#8b6a20}
+.time-slot-body{display:none;padding:0.75rem 0.9rem;border-top:0.5px solid rgba(201,160,160,0.15);background:var(--surface)}
+.slot-btns{display:flex;gap:6px;margin-bottom:0.75rem;flex-wrap:wrap}
+.slot-btn{padding:6px 11px;border-radius:20px;font-size:11px;cursor:pointer;border:0.5px solid rgba(201,160,160,0.4);font-family:'DM Sans',sans-serif;background:#fff;color:var(--muted);transition:all 0.2s}
+.slot-btn.sel-open{background:var(--green);color:#fff;border-color:var(--green)}
+.slot-btn.sel-block{background:#c9a0a0;color:#fff;border-color:#c9a0a0}
+.slot-btn.sel-limit{background:var(--gold);color:#fff;border-color:var(--gold)}
+.items-checks{margin-top:0.5rem}
+.check-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:0.5px solid rgba(201,160,160,0.1)}
+.check-row:last-child{border:none}
+.check-row input{flex-shrink:0;width:16px;height:16px;accent-color:var(--rose);cursor:pointer}
+.check-row label{font-size:12px;color:var(--ink);flex:1;cursor:pointer}
+.check-cat{font-size:10px;color:var(--muted);margin-left:4px}
+.check-price{font-size:11px;color:var(--muted);flex-shrink:0}
+
+/* ITEMS */
+.item-row{display:flex;align-items:center;justify-content:space-between;padding:0.6rem 1.1rem;background:#fff;border:0.5px solid rgba(201,160,160,0.25);border-radius:10px;margin-bottom:6px}
+.item-name{font-size:13px;color:var(--ink)}
+.item-price{font-size:12px;color:var(--rose-dark);font-weight:500;margin-right:8px}
+.item-del{background:none;border:none;cursor:pointer;color:var(--muted);font-size:15px;line-height:1;padding:0}
+.item-del:hover{color:var(--rose-dark)}
+
+/* BOOKINGS */
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:1rem}
+.stat-card{background:#fff;border:0.5px solid rgba(201,160,160,0.25);border-radius:12px;padding:0.9rem 1rem}
+.stat-label{font-size:11px;color:var(--muted);margin-bottom:4px}
+.stat-value{font-family:'Cormorant Garamond',serif;font-size:1.5rem;color:var(--ink)}
+.booking-card{background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:12px;padding:0.9rem 1.1rem;margin-bottom:0.75rem}
+.bk-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem}
+.bk-name{font-family:'Cormorant Garamond',serif;font-size:1rem;color:var(--ink)}
+.bk-date{font-size:11px;color:var(--muted)}
+.bk-badge{font-size:10px;padding:3px 9px;border-radius:20px;background:var(--rose-light);color:var(--rose-dark)}
+.bk-badge.male{background:var(--green-light);color:var(--green-dark)}
+.bk-row{display:flex;justify-content:space-between;font-size:12px;padding:2px 0;color:var(--muted)}
+.bk-row span:last-child{color:var(--ink);font-weight:500;text-align:right;max-width:60%}
+.bk-total{border-top:0.5px solid rgba(201,160,160,0.2);margin-top:6px;padding-top:6px;display:flex;justify-content:space-between;font-size:13px}
+.bk-total span:last-child{color:var(--rose-dark);font-weight:500}
+.bk-del{background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;text-decoration:underline;font-family:'DM Sans',sans-serif;margin-top:6px}
+.bk-del:hover{color:var(--rose-dark)}
+.empty-msg{text-align:center;font-size:13px;color:var(--muted);padding:2rem 0}
+.search-input{width:100%;padding:9px 13px;background:#fff;border:0.5px solid rgba(201,160,160,0.3);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);outline:none;margin-bottom:1rem}
+.search-input:focus{border-color:var(--rose)}
+</style>
+</head>
+<body>
+
+<div id="loginScreen">
+  <div class="login-logo">✦ LUVIA 樂薇婭 ✦</div>
+  <div class="login-box">
+    <div class="login-title">塔莎後台管理</div>
+    <label class="login-label">密碼</label>
+    <input class="login-input" id="pwInput" type="password" placeholder="請輸入管理密碼" onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="login-btn" onclick="doLogin()">登入</button>
+    <div class="login-err" id="loginErr">密碼錯誤，請再試一次</div>
+  </div>
+</div>
+
+<div id="adminScreen">
+  <div class="top-bar">
+    <div class="top-logo">✦ LUVIA 樂薇婭 後台</div>
+    <button class="top-logout" onclick="doLogout()">登出</button>
+  </div>
+  <div class="wrap">
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0)">時段管理</div>
+      <div class="tab" onclick="switchTab(1)">排程設定</div>
+      <div class="tab" onclick="switchTab(2)">服務項目</div>
+      <div class="tab" onclick="switchTab(3)">預約記錄</div>
+    </div>
+
+    <!-- TAB 0 時段 -->
+    <div class="tab-content active" id="tabTimes">
+      <div class="sec-title">目前開放時段</div>
+      <div class="card">
+        <div id="timeChips" style="display:flex;flex-wrap:wrap;margin-bottom:1rem;min-height:32px"></div>
+        <div class="add-row">
+          <input class="add-input" id="newTime" type="time"/>
+          <button class="btn-add" onclick="addTime()">新增</button>
+        </div>
+      </div>
+      <button class="btn-save" onclick="saveTimes()">儲存時段設定</button>
+      <div class="save-ok" id="timeOk">✦ 已儲存，顧客頁面立即生效</div>
+    </div>
+
+    <!-- TAB 1 排程設定 -->
+    <div class="tab-content" id="tabSchedule">
+      <div class="sec-title">點選日期 → 設定每個時段可接的服務項目</div>
+      <div class="card">
+        <div class="cal-nav">
+          <button class="cal-nav-btn" onclick="prevMonth()">‹</button>
+          <div class="cal-month" id="calMonth"></div>
+          <button class="cal-nav-btn" onclick="nextMonth()">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+        <div class="cal-legend">
+          <span><div class="cal-legend-dot" style="background:#c9a0a0"></div>全封鎖</span>
+          <span><div class="cal-legend-dot" style="background:var(--green-light);border:1px solid var(--green)"></div>有特殊排程</span>
+          <span><div class="cal-legend-dot" style="background:var(--rose-light);border:1.5px solid var(--rose)"></div>今天</span>
+        </div>
+      </div>
+
+      <div class="sched-panel" id="schedPanel">
+        <div class="sched-date-title">
+          <span id="schedDateTitle"></span>
+          <button class="sched-close" onclick="closePanel()">✕</button>
+        </div>
+        <div id="schedSlots"></div>
+        <button class="btn-save" style="margin-top:1rem" onclick="saveSchedule()">儲存此日排程</button>
+        <div class="save-ok" id="schedOk">✦ 已儲存</div>
+      </div>
+    </div>
+
+    <!-- TAB 2 服務項目 -->
+    <div class="tab-content" id="tabServices">
+      <div class="sec-title">選擇類別</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:1rem" id="catTabs"></div>
+      <div class="sec-title">目前項目</div>
+      <div id="itemList"></div>
+      <div class="card" style="margin-top:0.5rem">
+        <div style="font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.75rem">新增項目</div>
+        <div style="display:grid;grid-template-columns:1fr 80px;gap:8px;margin-bottom:8px">
+          <input class="add-input" id="newItemName" placeholder="項目名稱"/>
+          <input class="add-input" id="newItemPrice" placeholder="價格" type="number"/>
+        </div>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:10px;cursor:pointer">
+          <input type="checkbox" id="newItemPlus"/> 價格加 +（視範圍）
+        </label>
+        <button class="btn-add" style="width:100%" onclick="addItem()">新增項目</button>
+      </div>
+      <button class="btn-save" onclick="saveServices()">儲存服務項目</button>
+      <div class="save-ok" id="svcOk">✦ 已儲存，顧客頁面立即生效</div>
+    </div>
+
+    <!-- TAB 3 預約記錄 -->
+    <div class="tab-content" id="tabBookings">
+      <div class="stats-grid" id="statsGrid"></div>
+      <input class="search-input" id="searchInput" placeholder="搜尋姓名或電話..." oninput="renderBookings()"/>
+      <div class="sec-title">預約記錄（最新在上）</div>
+      <div id="bookingsList"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const ADMIN_PW='luvia2024';
+let currentTimes=[];
+let scheduleRules={};
+let currentServices={};
+let activeCat='F_wax';
+let calYear,calMonth;
+let selDateKey=null;
+let tempRules={};
+
+const DEFAULT_SVC={
+  F:[
+    {id:'wax',icon:'✨',name:'熱蠟除毛',desc:'以上除毛皆含護理',note:'以上除毛皆含護理',items:[
+      {name:'私密處全除',price:1600},{name:'全腿',price:1400},{name:'小腿',price:1000},{name:'全手',price:1100},
+      {name:'腋下',price:400},{name:'鼻孔',price:300},{name:'臉部鬍子（視範圍）',price:800,plus:true},
+      {name:'全背部',price:800},{name:'全腹部（視範圍）',price:700,plus:true},{name:'私密處面膜',price:350},
+    ]},
+    {id:'lash',icon:'👁',name:'睫毛管理',desc:'專業睫毛捲翹術',items:[{name:'睫毛捲翹術',price:1100}]},
+    {id:'nail',icon:'💅',name:'美甲・足底保養',desc:'手足美甲全方位護理',items:[
+      {name:'單色',price:699},{name:'貓眼',price:799},{name:'造型',price:800,plus:true},
+      {name:'卸甲',price:150},{name:'延甲/指',price:60},{name:'足底護理',price:800},
+    ]},
+  ],
+  M:[
+    {id:'mwax',icon:'✨',name:'男士熱蠟除毛',desc:'以上除毛皆含護理',note:'以上除毛皆含護理',items:[
+      {name:'私密處全除',price:2000},{name:'全腿',price:1500},{name:'小腿',price:1100},{name:'全手',price:1200},
+      {name:'腋下',price:500},{name:'鼻孔',price:400},{name:'臉部鬍子（視範圍）',price:1000,plus:true},
+      {name:'全背部',price:1000},{name:'全腹部（視範圍）',price:900,plus:true},{name:'私密處面膜',price:350},
+    ]},
+  ],
+};
+
+function doLogin(){
+  if(document.getElementById('pwInput').value===ADMIN_PW){
+    document.getElementById('loginScreen').style.display='none';
+    document.getElementById('adminScreen').style.display='block';
+    load();
+  } else document.getElementById('loginErr').style.display='block';
+}
+function doLogout(){
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('adminScreen').style.display='none';
+  document.getElementById('pwInput').value='';
+  document.getElementById('loginErr').style.display='none';
+}
+function load(){
+  const c=JSON.parse(localStorage.getItem('luvia_admin_cfg')||'{}');
+  currentTimes=c.times&&c.times.length?[...c.times]:['10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00','18:00','19:00'];
+  scheduleRules=c.scheduleRules||{};
+  currentServices=c.services?JSON.parse(JSON.stringify(c.services)):JSON.parse(JSON.stringify(DEFAULT_SVC));
+  const n=new Date(); calYear=n.getFullYear(); calMonth=n.getMonth();
+  renderChips(); renderCal(); renderCatTabs(); renderBookings(); renderStats();
+}
+function saveCfg(data){ const c=JSON.parse(localStorage.getItem('luvia_admin_cfg')||'{}'); Object.assign(c,data); localStorage.setItem('luvia_admin_cfg',JSON.stringify(c)); }
+function showOk(id){ const e=document.getElementById(id); e.style.display='block'; setTimeout(()=>e.style.display='none',2500); }
+function switchTab(i){
+  document.querySelectorAll('.tab').forEach((t,j)=>t.className='tab'+(j===i?' active':''));
+  document.querySelectorAll('.tab-content').forEach((t,j)=>t.className='tab-content'+(j===i?' active':''));
+}
+
+/* TAB 0 */
+function renderChips(){
+  const s=[...currentTimes].sort();
+  document.getElementById('timeChips').innerHTML=s.map(t=>`<div class="chip">${t}<button class="chip-del" onclick="rmTime('${t}')">✕</button></div>`).join('')
+    ||'<span style="font-size:12px;color:var(--muted)">尚未設定時段</span>';
+}
+function addTime(){ const v=document.getElementById('newTime').value; if(!v)return; const h=v.slice(0,5); if(currentTimes.includes(h)){alert('已存在');return;} currentTimes.push(h); document.getElementById('newTime').value=''; renderChips(); }
+function rmTime(t){ currentTimes=currentTimes.filter(x=>x!==t); renderChips(); }
+function saveTimes(){ saveCfg({times:[...currentTimes].sort()}); showOk('timeOk'); }
+
+/* TAB 1 */
+function renderCal(){
+  const M=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('calMonth').textContent=`${calYear} · ${M[calMonth]}`;
+  const D=['日','一','二','三','四','五','六'];
+  const today=new Date();
+  const fd=new Date(calYear,calMonth,1).getDay();
+  const dim=new Date(calYear,calMonth+1,0).getDate();
+  const dip=new Date(calYear,calMonth,0).getDate();
+  let h=D.map(d=>`<div class="cal-day-name">${d}</div>`).join('');
+  for(let i=fd-1;i>=0;i--) h+=`<div class="cal-day other-month">${dip-i}</div>`;
+  for(let d=1;d<=dim;d++){
+    const k=`${calYear}-${calMonth+1}-${d}`;
+    const isTd=today.getFullYear()===calYear&&today.getMonth()===calMonth&&today.getDate()===d;
+    const rule=scheduleRules[k];
+    const isBlocked=rule&&[...currentTimes].sort().every(t=>rule[t]&&rule[t].mode==='blocked');
+    const hasRule=rule&&Object.keys(rule).length>0;
+    let cls='cal-day'+(isTd?' today':'')+(isBlocked?' blocked':hasRule?' has-rule':'');
+    h+=`<div class="${cls}" onclick="openPanel('${k}',${d})">${d}${hasRule&&!isBlocked?'<div class="cal-dot"></div>':''}</div>`;
+  }
+  const tot=fd+dim; const rem=tot%7===0?0:7-(tot%7);
+  for(let d=1;d<=rem;d++) h+=`<div class="cal-day other-month">${d}</div>`;
+  document.getElementById('calGrid').innerHTML=h;
+}
+function prevMonth(){ calMonth--; if(calMonth<0){calMonth=11;calYear--;} renderCal(); }
+function nextMonth(){ calMonth++; if(calMonth>11){calMonth=0;calYear++;} renderCal(); }
+
+function getAllItems(){
+  const arr=[];
+  ['F','M'].forEach(g=>currentServices[g].forEach(cat=>cat.items.forEach(it=>{
+    if(!arr.find(x=>x.name===it.name)) arr.push({...it,catName:cat.name});
+  })));
+  return arr;
+}
+
+function openPanel(dateKey,day){
+  selDateKey=dateKey;
+  document.getElementById('schedDateTitle').textContent=`${calYear}/${calMonth+1}/${day} 排程設定`;
+  tempRules=JSON.parse(JSON.stringify(scheduleRules[dateKey]||{}));
+  renderSlots();
+  const p=document.getElementById('schedPanel'); p.style.display='block';
+  setTimeout(()=>p.scrollIntoView({behavior:'smooth',block:'start'}),50);
+}
+function closePanel(){ document.getElementById('schedPanel').style.display='none'; selDateKey=null; }
+
+function renderSlots(){
+  const times=[...currentTimes].sort();
+  if(!times.length){ document.getElementById('schedSlots').innerHTML='<div style="font-size:12px;color:var(--muted)">請先設定時段</div>'; return; }
+  const allItems=getAllItems();
+  document.getElementById('schedSlots').innerHTML=times.map(t=>{
+    const r=tempRules[t]||{mode:'open',items:[]};
+    const lbl=r.mode==='open'?'全部開放':r.mode==='blocked'?'完全封鎖':`僅限 ${r.items.length} 項`;
+    const cls=r.mode==='open'?'s-open':r.mode==='blocked'?'s-blocked':'s-limited';
+    const tid=t.replace(':','_');
+    return`<div class="time-slot-row">
+      <div class="time-slot-hdr" onclick="toggleBody('${tid}')">
+        <span class="time-slot-label">${t}</span>
+        <span class="slot-status ${cls}" id="st_${tid}">${lbl}</span>
+      </div>
+      <div class="time-slot-body" id="bd_${tid}">
+        <div class="slot-btns">
+          <button class="slot-btn${r.mode==='open'?' sel-open':''}" onclick="setMode('${t}','open')">✓ 全部開放</button>
+          <button class="slot-btn${r.mode==='blocked'?' sel-block':''}" onclick="setMode('${t}','blocked')">✕ 完全封鎖</button>
+          <button class="slot-btn${r.mode==='limited'?' sel-limit':''}" onclick="setMode('${t}','limited')">指定項目</button>
+        </div>
+        <div class="items-checks" id="chks_${tid}" style="display:${r.mode==='limited'?'block':'none'}">
+          ${allItems.map(it=>{
+            const cid='c_'+tid+'_'+it.name.replace(/[^a-zA-Z0-9]/g,'_');
+            return`<div class="check-row">
+              <input type="checkbox" id="${cid}" ${r.items.includes(it.name)?'checked':''} onchange="toggleCheck('${t}','${it.name}',this.checked)"/>
+              <label for="${cid}">${it.name}<span class="check-cat">(${it.catName})</span></label>
+              <span class="check-price">NT$ ${it.price}${it.plus?'+':''}</span>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleBody(tid){ const b=document.getElementById('bd_'+tid); b.style.display=b.style.display==='block'?'none':'block'; }
+function setMode(t,mode){
+  if(!tempRules[t]) tempRules[t]={mode:'open',items:[]};
+  tempRules[t].mode=mode;
+  if(mode!=='limited') tempRules[t].items=[];
+  renderSlots();
+  document.getElementById('bd_'+t.replace(':','_')).style.display='block';
+}
+function toggleCheck(t,name,checked){
+  if(!tempRules[t]) tempRules[t]={mode:'limited',items:[]};
+  tempRules[t].items=checked?[...new Set([...tempRules[t].items,name])]:tempRules[t].items.filter(x=>x!==name);
+}
+function saveSchedule(){
+  if(!selDateKey) return;
+  const cleaned={};
+  Object.entries(tempRules).forEach(([t,r])=>{ if(r.mode!=='open') cleaned[t]=r; });
+  if(Object.keys(cleaned).length) scheduleRules[selDateKey]=cleaned;
+  else delete scheduleRules[selDateKey];
+  saveCfg({scheduleRules}); renderCal(); showOk('schedOk');
+}
+
+/* TAB 2 */
+const CLABELS={F_wax:'女・熱蠟除毛',F_lash:'女・睫毛管理',F_nail:'女・美甲足保',M_mwax:'男・熱蠟除毛'};
+function renderCatTabs(){
+  const cats=[{k:'F_wax',g:'F',i:0},{k:'F_lash',g:'F',i:1},{k:'F_nail',g:'F',i:2},{k:'M_mwax',g:'M',i:0}];
+  document.getElementById('catTabs').innerHTML=cats.map(c=>`<button class="cat-btn${activeCat===c.k?' active':''}" onclick="selCat('${c.k}')">${CLABELS[c.k]}</button>`).join('');
+  renderItemList();
+}
+function selCat(k){ activeCat=k; renderCatTabs(); }
+function getCat(){ const m={F_wax:{g:'F',i:0},F_lash:{g:'F',i:1},F_nail:{g:'F',i:2},M_mwax:{g:'M',i:0}}; const {g,i}=m[activeCat]; return currentServices[g][i]; }
+function renderItemList(){
+  const c=getCat();
+  document.getElementById('itemList').innerHTML=c.items.map((it,idx)=>
+    `<div class="item-row"><span class="item-name">${it.name}</span><div style="display:flex;align-items:center"><span class="item-price">NT$ ${it.price}${it.plus?'+':''}</span><button class="item-del" onclick="rmItem(${idx})">✕</button></div></div>`
+  ).join('')||'<div style="font-size:12px;color:var(--muted);margin-bottom:0.75rem">尚未設定項目</div>';
+}
+function addItem(){ const n=document.getElementById('newItemName').value.trim(); const p=parseInt(document.getElementById('newItemPrice').value); const pl=document.getElementById('newItemPlus').checked; if(!n){alert('請填寫名稱');return;} if(!p||p<=0){alert('請填寫價格');return;} getCat().items.push({name:n,price:p,plus:pl}); document.getElementById('newItemName').value=''; document.getElementById('newItemPrice').value=''; document.getElementById('newItemPlus').checked=false; renderItemList(); }
+function rmItem(i){ if(!confirm('確定刪除？'))return; getCat().items.splice(i,1); renderItemList(); }
+function saveServices(){ saveCfg({services:JSON.parse(JSON.stringify(currentServices))}); showOk('svcOk'); }
+
+/* TAB 3 */
+function getBookings(){ return JSON.parse(localStorage.getItem('luvia_bookings')||'[]'); }
+function renderStats(){ const b=getBookings(); document.getElementById('statsGrid').innerHTML=`<div class="stat-card"><div class="stat-label">總預約筆數</div><div class="stat-value">${b.length}</div></div><div class="stat-card"><div class="stat-label">本月新增</div><div class="stat-value">${b.filter(x=>{const d=new Date(x.id);return d.getMonth()===new Date().getMonth()&&d.getFullYear()===new Date().getFullYear();}).length}</div></div>`; }
+function renderBookings(){ const q=document.getElementById('searchInput').value.trim().toLowerCase(); let b=getBookings(); if(q) b=b.filter(x=>x.name.toLowerCase().includes(q)||x.phone.includes(q)); if(!b.length){document.getElementById('bookingsList').innerHTML='<div class="empty-msg">暫無預約記錄</div>';return;} document.getElementById('bookingsList').innerHTML=b.map(x=>`<div class="booking-card"><div class="bk-header"><div><div class="bk-name">${x.name}</div><div class="bk-date">${x.createdAt||''}</div></div><div class="bk-badge${x.gender==='男士'?' male':''}">${x.gender}</div></div><div class="bk-row"><span>電話</span><span>${x.phone}</span></div>${x.lineId?`<div class="bk-row"><span>LINE</span><span>${x.lineId}</span></div>`:''}<div class="bk-row"><span>服務</span><span>${x.services}</span></div><div class="bk-row"><span>時間</span><span>${x.date}</span></div>${x.memo?`<div class="bk-row"><span>備註</span><span>${x.memo}</span></div>`:''}<div class="bk-total"><span>合計</span><span>${x.total}</span></div><button class="bk-del" onclick="delBk(${x.id})">刪除此記錄</button></div>`).join(''); }
+function delBk(id){ if(!confirm('確定刪除？'))return; localStorage.setItem('luvia_bookings',JSON.stringify(getBookings().filter(x=>x.id!==id))); renderBookings(); renderStats(); }
+</script>
+</body>
+</html>
